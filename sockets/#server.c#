@@ -1,0 +1,58 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <unistd.h>
+
+int main(int argc, char** argv){
+
+  int s;
+  int sock_fd = socket(AF_INET, SOCK_STREAM, 0);
+
+  struct addrinfo directives, *result;
+  memset(&directives, 0, sizeof(struct addrinfo));
+  directives.ai_family = AF_INET;
+  directives.ai_socktype = SOCK_STREAM;
+  directives.ai_flags = AI_PASSIVE;
+
+  s = getaddrinfo(NULL, "8080", &directives, &result);
+  if (s != 0) {
+    fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(s));
+    exit(1);
+  }
+
+  if(bind(sock_fd, result->ai_addr, result->ai_addrlen) != 0){
+      perror("bind()");
+      exit(1);
+  }
+
+  if(listen(sock_fd, 10) != 0){
+      perror("listen()");
+      exit(1);
+  }
+
+  printf("Waiting for connection...\n");
+  
+  while(1){
+      int client_fd = accept(sock_fd, NULL, NULL); 
+      write(client_fd, "Connected!", strlen("Connected!")); 
+      close(client_fd);
+      sleep(1);
+    }
+
+  int client_fd = accept(sock_fd, NULL, NULL);
+  printf("Connection made: client_fd=%d\n", client_fd);
+
+  char buffer[1000];
+  int len = read(client_fd, buffer, 999);
+  buffer[len] = '\0';
+
+  printf("HTTP Header for Connector");
+  printf("Read %d chars\n", len);
+  printf("===\n");
+  printf("%s\n", buffer);
+  */
+  return 0;
+}
